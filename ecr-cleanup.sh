@@ -21,7 +21,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
   tagDates=$(echo "${tags}" | grep -E '^\d\d\d\d-\d\d-\d\d')
   tagVersions=$(echo "${tags}" | grep -E '^\d+\.\d+\.\d+')
-  #echo "Tags: ${tags}"
+  echo "Tags: ${tags}"
   echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
   #for T in ${tags}; do
