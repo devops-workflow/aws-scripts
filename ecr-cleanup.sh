@@ -10,6 +10,9 @@
 #   d                   If no other tags
 #   x.y.z-d-sha         No more than x per tag version
 #
+# TODO: set AWS region
+export AWS_DEFAULT_REGION=us-west-2
+export AWS_REGION=${AWS_DEFAULT_REGION}
 daysOld=5
 dateCutoff=$(date -d '5 days ago' +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
