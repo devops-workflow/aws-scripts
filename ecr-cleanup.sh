@@ -79,5 +79,5 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   #echo "Image list: $(echo "${imageList}" | jq .)"
   toDelete=$(echo "${imageList}" | jq -r -f number-single-only.jq | awk NF)
   #echo "Delete numbers: ${toDelete}"
-  deleteTags ${R} versions ${toDelete}
+  deleteTags ${R} numbers ${toDelete}
 done
