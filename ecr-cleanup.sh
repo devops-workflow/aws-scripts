@@ -14,13 +14,15 @@
 export AWS_DEFAULT_REGION=us-west-2
 export AWS_REGION=${AWS_DEFAULT_REGION}
 daysOld=5
-dateCutoff=$(date -d '5 days ago' +%Y-%m-%d)
+#grep='grep -E'  # Mac
+grep='grep -P'  # Linux
+dateCutoff=$(date -d '${daysOld} days ago' +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
 for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName); do
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
-  tagDates=$(echo "${tags}" | grep -E '^\d\d\d\d-\d\d-\d\d')
-  tagVersions=$(echo "${tags}" | grep -E '^\d+\.\d+\.\d+')
+  tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
+  tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+')
   echo "Tags: ${tags}"
   echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
