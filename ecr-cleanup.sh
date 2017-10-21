@@ -29,7 +29,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   #echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
   echo "Tag Version Releases: ${tagVersionsReleases}"
-  echo "Tag Versions sorted: $(echo "${tagVersions}" | sort -V)"
+  echo "Tag Versions sorted: $(echo "${tagVersions}" | sort -Vr)"
   #for T in ${tags}; do
   #  echo $T
   #done
