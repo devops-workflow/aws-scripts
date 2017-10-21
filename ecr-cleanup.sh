@@ -76,7 +76,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   tagNumbers=$(echo "${tags}" | ${grep} '^\d+$')
   echo "Tag numbers: ${tagNumbers}"
   imageList=$(aws ecr describe-images --repository-name ${R})
-  echo "Image list: $(echo "${imageList}" | jq .)"
+  #echo "Image list: $(echo "${imageList}" | jq .)"
   toDelete=$(echo "${imageList}" | jq -r -f number-single-only.jq | awk NF)
   echo "Delete numbers: ${toDelete}"
   #deleteTags ${R} versions ${toDelete}
