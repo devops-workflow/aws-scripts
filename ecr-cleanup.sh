@@ -17,6 +17,25 @@ export AWS_REGION=${AWS_DEFAULT_REGION}
 daysOld=5
 #grep='grep -E'  # Mac
 grep='grep -P'  # Linux
+
+function deleteTags {
+  args=( $@ )
+  repo=${args[0]}
+  tagType=${args[1]}
+  tags=${args[@]:2}
+  #array $@
+  # len $#
+  # Use shift or slice the array ?
+  # last arg: args=$# && lastArg=${!args} or ${!#}
+  echo "Delete ${tagType}: ${tags}"
+  imageIds=''
+  for tag in ${tags}; do
+    imageIds="${imageIds} imageTag=${tag}"
+  done
+  if [ -n "${imageIds}" ]; then
+    aws ecr batch-delete-image --repository-name ${repo} --image-ids ${imageIds}
+  fi
+}
 dateCutoff=$(date -d "${daysOld} days ago" +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
 #echo "Date cutoff: ${dateCutoff}, Sec: ${dateCutoffSec}"
@@ -40,14 +59,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
       toDelete="${toDelete} ${date}"
     fi
   done
-  echo "Delete dates: ${toDelete}"
-  imageIds=''
-  for date in ${toDelete}; do
-    imageIds="${imageIds} imageTag=${date}"
-  done
-  if [ -n "${imageIds}" ]; then
-    aws ecr batch-delete-image --repository-name ${R} --image-ids ${imageIds}
-  fi
+  deleteTags ${R} dates ${toDelete}
   ### Cleanup version tags
   toDelete=''
   foundRelease=''
@@ -60,5 +72,13 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
     fi
   done
   echo "Delete versions: ${toDelete}"
+  #deleteTags ${R} dates ${toDelete}
+  #imageIds=''
+  #for tag in ${toDelete}; do
+  #  imageIds="${imageIds} imageTag=${tag}"
+  #done
+  #if [ -n "${imageIds}" ]; then
+  #  aws ecr batch-delete-image --repository-name ${R} --image-ids ${imageIds}
+  #fi
   ### Cleanup single number tags
 done
