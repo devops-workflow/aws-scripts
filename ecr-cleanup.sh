@@ -23,10 +23,6 @@ function deleteTags {
   repo=${args[0]}
   tagType=${args[1]}
   tags=${args[@]:2}
-  #array $@
-  # len $#
-  # Use shift or slice the array ?
-  # last arg: args=$# && lastArg=${!args} or ${!#}
   echo "Delete ${tagType}: ${tags}"
   imageIds=''
   for tag in ${tags}; do
@@ -36,20 +32,18 @@ function deleteTags {
     aws ecr batch-delete-image --repository-name ${repo} --image-ids ${imageIds}
   fi
 }
+
 dateCutoff=$(date -d "${daysOld} days ago" +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
 #echo "Date cutoff: ${dateCutoff}, Sec: ${dateCutoffSec}"
 for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName); do
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
-  tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
-  tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+' | sort -Vr)
-  tagVersionsReleases=$(echo "${tagVersions}" | ${grep} '^\d+\.\d+\.\d+$')
   echo "Tags: ${tags}"
-  #echo "Tag Dates: ${tagDates}"
-  echo "Tag Versions: ${tagVersions}"
-  echo "Tag Version Releases: ${tagVersionsReleases}"
   ### Cleanup date tags
+  # Remove data tags older than x days
+  tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
+  #echo "Tag Dates: ${tagDates}"
   toDelete=''
   for date in ${tagDates}; do
     dateBase="${date%%_*}"
@@ -61,6 +55,11 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   done
   deleteTags ${R} dates ${toDelete}
   ### Cleanup version tags
+  # Remove any intermediate versions older than the newest release version
+  tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+' | sort -Vr)
+  tagVersionsReleases=$(echo "${tagVersions}" | ${grep} '^\d+\.\d+\.\d+$')
+  echo "Tag Versions: ${tagVersions}"
+  echo "Tag Version Releases: ${tagVersionsReleases}"
   toDelete=''
   foundRelease=''
   for version in ${tagVersions}; do
@@ -71,14 +70,11 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
       toDelete="${toDelete} ${version}"
     fi
   done
-  echo "Delete versions: ${toDelete}"
-  #deleteTags ${R} dates ${toDelete}
-  #imageIds=''
-  #for tag in ${toDelete}; do
-  #  imageIds="${imageIds} imageTag=${tag}"
-  #done
-  #if [ -n "${imageIds}" ]; then
-  #  aws ecr batch-delete-image --repository-name ${R} --image-ids ${imageIds}
-  #fi
+  deleteTags ${R} versions ${toDelete}
   ### Cleanup single number tags
+  # Remove any single number tags, if it is the only tag
+  tagNumbers=$(echo "${tags}" | ${grep} '^\d+$')
+  echo "Tag numbers: ${tagNumbers}"
+  imageList=$(aws ecr list-images --repository-name ${R})
+  echo "Image list: $(echo "${imageList}" | jq .)"
 done
