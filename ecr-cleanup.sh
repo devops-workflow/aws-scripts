@@ -75,6 +75,6 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   # Remove any single number tags, if it is the only tag
   tagNumbers=$(echo "${tags}" | ${grep} '^\d+$')
   echo "Tag numbers: ${tagNumbers}"
-  imageList=$(aws ecr list-images --repository-name ${R})
+  imageList=$(aws ecr describe-images --repository-name ${R})
   echo "Image list: $(echo "${imageList}" | jq .)"
 done
