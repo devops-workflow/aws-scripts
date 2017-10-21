@@ -16,8 +16,9 @@ export AWS_REGION=${AWS_DEFAULT_REGION}
 daysOld=5
 #grep='grep -E'  # Mac
 grep='grep -P'  # Linux
-dateCutoff=$(date -d '${daysOld} days ago' +%Y-%m-%d)
+dateCutoff=$(date -d "${daysOld} days ago" +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
+echo "Date cutoff: ${dateCutoff}, Sec: ${dateCutoffSec}"
 for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName); do
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
@@ -35,6 +36,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
     # TODO: move to python for more portable data manipulation ?
     dateBase="${date%%_*}"
     dateSec=$(date -d ${dateBase} +%s)
+    echo "Date: ${date}, base: ${dateBase}, Sec: ${dateSec}"
     if [ ${dateCutoffSec} -gt ${dateSec} ]; then
       toDelete="${toDelete} ${date}"
     fi
