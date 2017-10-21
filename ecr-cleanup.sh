@@ -19,12 +19,12 @@ daysOld=5
 grep='grep -P'  # Linux
 
 function deleteTags {
-  args=( $@ )
-  repo=${args[0]}
-  tagType=${args[1]}
-  tags=${args[@]:2}
+  local args=( $@ )
+  local repo=${args[0]}
+  local tagType=${args[1]}
+  local tags=${args[@]:2}
   echo "Delete ${tagType}: ${tags}"
-  imageIds=''
+  local imageIds=''
   for tag in ${tags}; do
     imageIds="${imageIds} imageTag=${tag}"
   done
