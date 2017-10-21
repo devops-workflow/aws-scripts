@@ -18,14 +18,14 @@ daysOld=5
 grep='grep -P'  # Linux
 dateCutoff=$(date -d "${daysOld} days ago" +%Y-%m-%d)
 dateCutoffSec=$(date -d ${dateCutoff} +%s)
-echo "Date cutoff: ${dateCutoff}, Sec: ${dateCutoffSec}"
+#echo "Date cutoff: ${dateCutoff}, Sec: ${dateCutoffSec}"
 for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName); do
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
   tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
   tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+')
   echo "Tags: ${tags}"
-  echo "Tag Dates: ${tagDates}"
+  #echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
   #for T in ${tags}; do
   #  echo $T
@@ -36,13 +36,19 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
     # TODO: move to python for more portable data manipulation ?
     dateBase="${date%%_*}"
     dateSec=$(date -d ${dateBase} +%s)
-    echo "Date: ${date}, base: ${dateBase}, Sec: ${dateSec}"
+    #echo "Date: ${date}, base: ${dateBase}, Sec: ${dateSec}"
     if [ ${dateCutoffSec} -gt ${dateSec} ]; then
       toDelete="${toDelete} ${date}"
     fi
   done
   echo "Delete dates: ${toDelete}"
-  #aws ecr batch-delete-image --repository-name ${R} --image-ids imageTag=a imageTag=b
+  imageIds=''
+  for date in ${toDelete}; do
+    imageIds="${imageIds} imageTag=${date}"
+  done
+  if [ -n "${imageIds}" ]; then
+    aws ecr batch-delete-image --repository-name ${R} --image-ids ${imageIds}
+  fi
   ### Cleanup version tags
   ### Cleanup single number tags
 done
