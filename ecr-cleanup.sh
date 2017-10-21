@@ -10,6 +10,7 @@
 #   d                   If no other tags
 #   x.y.z-d-sha         No more than x per tag version
 #
+# TODO: move to python to make more portable ?
 # TODO: set AWS region
 export AWS_DEFAULT_REGION=us-west-2
 export AWS_REGION=${AWS_DEFAULT_REGION}
@@ -23,20 +24,15 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
   tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
-  tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+')
+  tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+' | sort -Vr)
   tagVersionsReleases=$(echo "${tagVersions}" | ${grep} '^\d+\.\d+\.\d+$')
   echo "Tags: ${tags}"
   #echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
   echo "Tag Version Releases: ${tagVersionsReleases}"
-  echo "Tag Versions sorted: $(echo "${tagVersions}" | sort -Vr)"
-  #for T in ${tags}; do
-  #  echo $T
-  #done
   ### Cleanup date tags
   toDelete=''
   for date in ${tagDates}; do
-    # TODO: move to python for more portable data manipulation ?
     dateBase="${date%%_*}"
     dateSec=$(date -d ${dateBase} +%s)
     #echo "Date: ${date}, base: ${dateBase}, Sec: ${dateSec}"
@@ -53,5 +49,16 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
     aws ecr batch-delete-image --repository-name ${R} --image-ids ${imageIds}
   fi
   ### Cleanup version tags
+  toDelete=''
+  foundRelease=''
+  for version in ${tagVersions}; do
+    echo "${version}" | ${grep} -q '^\d+\.\d+\.\d+$'
+    if [ $? -eq 0 ]; then
+      foundRelease='true'
+    elif [ "${foundRelease}" == 'true' ]; then
+      toDelete="${toDelete} ${version}"
+    fi
+  done
+  echo "Delete versions: ${toDelete}"
   ### Cleanup single number tags
 done
