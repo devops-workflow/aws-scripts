@@ -24,9 +24,12 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
   tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
   tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+')
+  tagVersionsReleases=$(echo "${tagVersions}" | ${grep} '^\d+\.\d+\.\d+$')
   echo "Tags: ${tags}"
   #echo "Tag Dates: ${tagDates}"
   echo "Tag Versions: ${tagVersions}"
+  echo "Tag Version Releases: ${tagVersionsReleases}"
+  echo "Tag Version Releases sorted: $(echo "${tagVersionsReleases}" | sort -V)"
   #for T in ${tags}; do
   #  echo $T
   #done
