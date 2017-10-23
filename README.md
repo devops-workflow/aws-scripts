@@ -1,4 +1,4 @@
-# Maintaince scripts for AWS
+# Maintenance scripts for AWS
 
 - ecr-cleanup.sh
- - Remove old tags/images from AWS ECR repositories 
+ - Remove old tags/images from AWS ECR repositories
