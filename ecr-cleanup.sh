@@ -57,7 +57,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
       toDelete="${toDelete} ${date}"
     fi
   done
-  deleteTags ${R} dates ${toDelete}
+  deleteTags ${R} 'old dates' ${toDelete}
   ### Cleanup version tags
   # Remove any intermediate versions older than the newest release version
   tagVersions=$(echo "${tags}" | ${grep} '^\d+\.\d+\.\d+' | sort -Vr)
@@ -74,16 +74,16 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
       toDelete="${toDelete} ${version}"
     fi
   done
-  deleteTags ${R} versions ${toDelete}
+  deleteTags ${R} version ${toDelete}
   ### Cleanup single number tags
   imageList=$(aws ecr describe-images --repository-name ${R})
   # Remove any single number tags, if it is the only tag
   toDelete=$(echo "${imageList}" | jq -r -f number-only.jq | awk NF)
-  deleteTags ${R} numbers ${toDelete}
+  deleteTags ${R} number ${toDelete}
   ### Cleanup images that only have a number and a date tag
   #toDelete=$(echo "${imageList}" | jq -r -f number-and-date-only.jq | awk NF)
-  #deleteTags ${R} numbers ${toDelete}
+  #deleteTags ${R} 'date and number' ${toDelete}
   ### Cleanup images that only have a date tag
   #toDelete=$(echo "${imageList}" | jq -r -f date-only.jq | awk NF)
-  #deleteTags ${R} numbers ${toDelete}
+  #deleteTags ${R} date ${toDelete}
 done
