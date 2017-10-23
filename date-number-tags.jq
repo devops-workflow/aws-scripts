@@ -17,7 +17,7 @@ elif (.imageTags | length == 2) and
  (.imageTags[] | test("^[0-9]+$")) and
  (.imageTags[] | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}_"))
  then
-  .imageTags[] | capture("^(?<num>[0-9]+)$").num
+  .imageTags[]
 else
   ""
 end
