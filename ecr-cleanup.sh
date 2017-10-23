@@ -9,7 +9,7 @@
 #   x.y.z-d-sha         DONE if newer x.y.z exists
 #   d                   DONE If no other tags
 #   x.y.z-d-sha         No more than x per tag version
-# -> if only number and date tags, no other tags
+# DONE if only number and date tags, no other tags
 # if only date tag, no other tags
 #
 # TODO: move to python to make more portable ? Useable as lambda
@@ -78,7 +78,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   ### Cleanup single number tags
   imageList=$(aws ecr describe-images --repository-name ${R})
   # Remove any single number tags, if it is the only tag
-  toDelete=$(echo "${imageList}" | jq -r -f number-single-only.jq | awk NF)
+  toDelete=$(echo "${imageList}" | jq -r -f number-only.jq | awk NF)
   deleteTags ${R} numbers ${toDelete}
   ### Cleanup images that only have a number and a date tag
   #toDelete=$(echo "${imageList}" | jq -r -f number-and-date-only.jq | awk NF)
