@@ -83,4 +83,7 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   ### Cleanup images that only have a number and a date tag
   #toDelete=$(echo "${imageList}" | jq -r -f number-and-date-only.jq | awk NF)
   #deleteTags ${R} numbers ${toDelete}
+  ### Cleanup images that only have a date tag
+  #toDelete=$(echo "${imageList}" | jq -r -f date-only.jq | awk NF)
+  #deleteTags ${R} numbers ${toDelete}
 done
