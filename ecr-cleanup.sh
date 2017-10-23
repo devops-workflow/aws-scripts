@@ -77,9 +77,13 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   deleteTags ${R} version ${toDelete}
   ### Cleanup single number tags
   imageList=$(aws ecr describe-images --repository-name ${R})
+  # Remove images that only have a date tag, a number tag, or a date and number tag
+  toDelete=$(echo "${imageList}" | jq -r -f date-number-tags.jq | awk NF)
+  echo "Delete date/number tags: ${toDelete}"
+  #deleteTags ${R} number ${toDelete}
   # Remove any single number tags, if it is the only tag
-  toDelete=$(echo "${imageList}" | jq -r -f number-only.jq | awk NF)
-  deleteTags ${R} number ${toDelete}
+  #toDelete=$(echo "${imageList}" | jq -r -f number-only.jq | awk NF)
+  #deleteTags ${R} number ${toDelete}
   ### Cleanup images that only have a number and a date tag
   #toDelete=$(echo "${imageList}" | jq -r -f number-and-date-only.jq | awk NF)
   #deleteTags ${R} 'date and number' ${toDelete}
