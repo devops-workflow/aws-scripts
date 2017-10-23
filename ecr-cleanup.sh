@@ -5,16 +5,20 @@
 # Clean all ECR repositories in AWS account
 #
 # Cleanup rules:
-#   YYYY-MM-DD*         older than x days
-#   x.y.z-d-sha         if newer x.y.z exists
-#   d                   If no other tags
+#   YYYY-MM-DD*         DONE older than x days
+#   x.y.z-d-sha         DONE if newer x.y.z exists
+#   d                   DONE If no other tags
 #   x.y.z-d-sha         No more than x per tag version
+# -> if only number and date tags, no other tags
+# if only date tag, no other tags
 #
-# TODO: move to python to make more portable ?
-# TODO: set AWS region
+# TODO: move to python to make more portable ? Useable as lambda
+# TODO: make into args or env vars
 export AWS_DEFAULT_REGION=us-west-2
 export AWS_REGION=${AWS_DEFAULT_REGION}
-daysOld=5
+daysOld=5       # Make arg
+# TODO: ability to select which rules to run?
+# END args
 #grep='grep -E'  # Mac
 grep='grep -P'  # Linux
 
@@ -72,12 +76,11 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
   done
   deleteTags ${R} versions ${toDelete}
   ### Cleanup single number tags
-  # Remove any single number tags, if it is the only tag
-  tagNumbers=$(echo "${tags}" | ${grep} '^\d+$')
-  echo "Tag numbers: ${tagNumbers}"
   imageList=$(aws ecr describe-images --repository-name ${R})
-  #echo "Image list: $(echo "${imageList}" | jq .)"
+  # Remove any single number tags, if it is the only tag
   toDelete=$(echo "${imageList}" | jq -r -f number-single-only.jq | awk NF)
-  #echo "Delete numbers: ${toDelete}"
   deleteTags ${R} numbers ${toDelete}
+  ### Cleanup images that only have a number and a date tag
+  #toDelete=$(echo "${imageList}" | jq -r -f number-and-date-only.jq | awk NF)
+  #deleteTags ${R} numbers ${toDelete}
 done
