@@ -43,7 +43,7 @@ dateCutoffSec=$(date -d ${dateCutoff} +%s)
 for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName); do
   echo "Cleaning ECR repository: ${R}"
   tags=$(aws ecr list-images --repository-name ${R} | jq -r .imageIds[].imageTag | sort)
-  echo "Tags: ${tags}"
+  #echo "Tags: ${tags}"
   ### Cleanup date tags
   # Remove data tags older than x days
   tagDates=$(echo "${tags}" | ${grep} '^\d\d\d\d-\d\d-\d\d')
