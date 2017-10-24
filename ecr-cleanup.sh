@@ -16,7 +16,7 @@
 # TODO: make into args or env vars
 export AWS_DEFAULT_REGION=us-west-2
 export AWS_REGION=${AWS_DEFAULT_REGION}
-daysOld=5       # Make arg
+daysOld=30       # Make arg
 # TODO: ability to select which rules to run?
 # END args
 #grep='grep -E'  # Mac
