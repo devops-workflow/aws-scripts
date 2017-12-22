@@ -8,15 +8,19 @@
 #   YYYY-MM-DD*         DONE older than x days
 #   YYYY-MM-DD*         DONE if only tag
 #   x.y.z-d-sha         DONE if newer x.y.z exists
-#   d                   DONE If only tags
-#   x.y.z-d-sha         No more than x per tag version
+#   d                   DONE If only tag
+#   x.y.z-d-sha         No more than x per tag version (interm versions)
 # DONE if only number and date tags, no other tags
+# TODO: Cleanup rules
+#   Only hash tag
+#   extend x.y.z cleanups to include *x.y.z
 #
 # TODO: move to python to make more portable ? Useable as lambda
 # TODO: make into args or env vars
 export AWS_DEFAULT_REGION=us-west-2
 export AWS_REGION=${AWS_DEFAULT_REGION}
 daysOld=30       # Make arg
+intermVersionsKeep=30
 # TODO: ability to select which rules to run?
 # END args
 #grep='grep -E'  # Mac
@@ -75,6 +79,13 @@ for R in $(aws ecr describe-repositories | jq -r .repositories[].repositoryName)
     fi
   done
   deleteTags ${R} version ${toDelete}
+  # TODO: Remove interm version tags older than the latest x
+  #   Only need to check the latest version tag or 0.0.0 if none
+  # latest=$(echo "${tagVersionsReleases}" | head -n 1)
+  # intermVersions=$(echo "${tagVersions}" | grep ${latest})
+  #if [ $(echo "${intermVersions}" | wc -l) -gt ${intermVersionsKeep} ]; then
+  #  echo
+  #fi
   ### Cleanup date & number tags
   imageList=$(aws ecr describe-images --repository-name ${R})
   # Remove images that only have a date tag, a number tag, or a date and number tag
