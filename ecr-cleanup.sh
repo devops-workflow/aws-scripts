@@ -8,9 +8,12 @@
 #   YYYY-MM-DD*         DONE older than x days
 #   YYYY-MM-DD*         DONE if only tag
 #   x.y.z-d-sha         DONE if newer x.y.z exists
-#   d                   DONE If only tags
+#   d                   DONE If only tag
 #   x.y.z-d-sha         No more than x per tag version (interm versions)
 # DONE if only number and date tags, no other tags
+# TODO: Cleanup rules
+#   Only hash tag (a-z0-9)
+#   extend x.y.z cleanups to include *x.y.z
 #
 # TODO: move to python to make more portable ? Useable as lambda
 # TODO: make into args or env vars
