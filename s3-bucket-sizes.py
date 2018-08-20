@@ -6,8 +6,10 @@
 #   Report if public
 #   def get_bucket_stats return dict, merge dict for each region, def report
 #   Output formats: markdown, json, table
+#   Output human readable number values (MB, GB, TB)
 
 import argparse
+import bitmath
 import boto3
 import datetime
 
@@ -55,7 +57,8 @@ def main(argv=None):
                                             )
         # The cloudwatch metrics will have the single datapoint, so we just report on it.
         for item in response["Datapoints"]:
-            print("| {} | {:,} |".format(bucket["Name"], int(item["Average"])))
+            print("| {} | ".format(bucket["Name"]) + bitmath.Byte(bytes=int(item["Average"])).best_prefix(system=bitmath.SI).format("{value:.2f} {unit} |"))
+            #print("| {} | {:,} |".format(bucket["Name"], int(item["Average"])))
             #print(bucket["Name"].ljust(45) + str("{:,}".format(int(item["Average"]))).rjust(25))
             # Note the use of "{:,}".format.
             # This is a new shorthand method to format output.
